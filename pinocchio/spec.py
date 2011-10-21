@@ -194,7 +194,8 @@ def camelcase2spec(name):
 
 
 def camelcaseDescription(object):
-    return inspect.getdoc(object) or camelcase2spec(object.__name__)
+    description = inspect.getdoc(object) or camelcase2spec(object.__name__)
+    return description.strip()
 
 
 def underscoredDescription(object):
