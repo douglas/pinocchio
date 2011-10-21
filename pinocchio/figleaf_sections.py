@@ -6,7 +6,7 @@ with test was being run at the time.  Can be used to produce a "barcode"
 of code execution.
 """
 
-DEFAULT_COVERAGE_FILE='.figleaf_sections'
+DEFAULT_COVERAGE_FILE = '.figleaf_sections'
 import pkg_resources
 
 try:
@@ -26,6 +26,7 @@ import os
 
 log = logging.getLogger(__name__)
 
+
 def calc_testname(test):
     """
     Build a reasonably human-readable testname from each test.
@@ -35,6 +36,7 @@ def calc_testname(test):
         name = name.split(' ')[1]
 
     return name
+
 
 class FigleafSections(Plugin):
     def __init__(self):
@@ -56,7 +58,7 @@ class FigleafSections(Plugin):
                           dest="figleaf_file",
                           default=None,
                           help="Store figleaf section coverage in this file")
-        
+
     def configure(self, options, config):
         """
         Configure: enable plugin?  And if so, where should the coverage
@@ -88,7 +90,7 @@ class FigleafSections(Plugin):
         Finalize: stop recording coverage info, save & exit.
         """
         figleaf.stop()
-        
+
         fp = open(self.figleaf_file, 'w')
         figleaf.dump_pickled_coverage(fp)
         fp.close()
@@ -114,4 +116,3 @@ class FigleafSections(Plugin):
         if self.testname:
             figleaf.stop_section()
             self.testname = None
-

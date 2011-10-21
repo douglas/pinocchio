@@ -7,8 +7,6 @@ bunch of output to find individual test output.
 import sys
 stderr = sys.stderr
 
-import nose.case
-
 import logging
 import os
 from nose.plugins.base import Plugin
@@ -16,18 +14,20 @@ from StringIO import StringIO as p_StringO
 from cStringIO import OutputType as c_StringO
 import traceback
 
+
 def write_test_output(test, output, dirname, prefix=''):
     testname = calc_testname(test)
 
     filename = '%s%s.txt' % (prefix, testname,)
     if dirname:
         filename = os.path.join(dirname, filename)
-        
+
     fp = open(filename, 'w')
     fp.write(output)
     fp.close()
 
 log = logging.getLogger(__name__)
+
 
 def calc_testname(test):
     name = str(test)
@@ -36,11 +36,13 @@ def calc_testname(test):
 
     return name
 
+
 def get_stdout():
     if isinstance(sys.stdout, c_StringO) or \
            isinstance(sys.stdout, p_StringO):
         return sys.stdout.getvalue()
     return None
+
 
 class OutputSave(Plugin):
     def __init__(self):
@@ -60,7 +62,7 @@ class OutputSave(Plugin):
         parser.add_option('--omit-success-output',
                           action="store_true",
                           dest="omit_success_output",
-                          help = 'do not save output from successful tests',
+                          help='do not save output from successful tests',
                           default=False)
 
         parser.add_option('--save-directory',
@@ -97,7 +99,7 @@ class OutputSave(Plugin):
             capt = exception_text
         else:
             capt += exception_text
-        
+
         write_test_output(test, capt, self.save_directory, prefix='error-')
 
     def addFailure(self, test, err):

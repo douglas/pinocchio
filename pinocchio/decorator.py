@@ -15,18 +15,20 @@ from nose.plugins.base import Plugin
 
 log = logging.getLogger(__name__)
 
+
 def sort_plugins_by_priority(a, b):
     pa = getattr(a, 'call_priority', 100)
     pb = getattr(b, 'call_priority', 100)
 
     return cmp(pa, pb)
 
+
 class Decorator(Plugin):
-    call_priority=-100                  # put this plugin at a high priority.
-    
+    call_priority = -100  # put this plugin at a high priority.
+
     def __init__(self):
         Plugin.__init__(self)
-        
+
     def add_options(self, parser, env=os.environ):
         parser.add_option("--decorator-file",
                           action="store",
@@ -38,13 +40,13 @@ class Decorator(Plugin):
         self.conf = config
 
         ### configure logging
-        
+
         logger = logging.getLogger(__name__)
         logger.propagate = 0
 
         handler = logging.StreamHandler(err)
         logger.addHandler(handler)
-        
+
         lvl = logging.WARNING
         if options.verbosity >= 5:
             lvl = 0
@@ -55,7 +57,7 @@ class Decorator(Plugin):
         logger.setLevel(lvl)
 
         ### enable plugin & save decorator file name, if given.
-        
+
         if options.decorator_file:
             self.enabled = True
             self.decorator_file = options.decorator_file
@@ -74,9 +76,9 @@ class Decorator(Plugin):
         self.conf.plugins.sort(sort_plugins_by_priority)
 
         ### load in the specified attributes file.
-        
+
         filename = self.decorator_file
-        
+
         fp = open(filename)
 
         curtains = {}
@@ -101,7 +103,7 @@ class Decorator(Plugin):
         self.curtains = curtains
 
     ######
-        
+
     def wantClass(self, cls):
         """
         wantClass -- attach matching attributes to the class.
@@ -131,7 +133,7 @@ class Decorator(Plugin):
         """
         fullname = '%s.%s' % (func.__module__,
                               func.__name__)
-        
+
         self._attach_attributes(fullname, func)
 
         # indicate no preferences re running this test.
@@ -143,6 +145,6 @@ class Decorator(Plugin):
         """
         attribs = self.curtains.get(fullname, [])
         log.info('_attach_attributes: %s, %s' % (fullname, attribs,))
-                  
+
         for a in attribs:
             obj.__dict__[a] = True
