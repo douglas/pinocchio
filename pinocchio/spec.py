@@ -98,6 +98,7 @@ from unittest import _WritelnDecorator
 import nose
 from nose.plugins import Plugin
 
+
 ################################################################################
 ## Functions for constructing specifications based on nose testing objects.
 ################################################################################
@@ -106,6 +107,7 @@ def dispatch_on_type(dispatch_table, instance):
     for type, func in dispatch_table:
         if type is True or isinstance(instance, type):
             return func(instance)
+
 
 def remove_leading(needle, haystack):
     """Remove leading needle string (if exists).
@@ -119,6 +121,7 @@ def remove_leading(needle, haystack):
         return haystack[len(needle):]
     return haystack
 
+
 def remove_trailing(needle, haystack):
     """Remove trailing needle string (if exists).
 
@@ -131,8 +134,10 @@ def remove_trailing(needle, haystack):
         return haystack[:-len(needle)]
     return haystack
 
+
 def remove_leading_and_trailing(needle, haystack):
     return remove_leading(needle, remove_trailing(needle, haystack))
+
 
 def camel2word(string):
     """Covert name from CamelCase to "Normal case".
@@ -147,6 +152,7 @@ def camel2word(string):
 
     return string[0] + re.sub(r'([A-Z])', wordize, string[1:])
 
+
 def complete_english(string):
     """
     >>> complete_english('dont do this')
@@ -154,15 +160,17 @@ def complete_english(string):
     >>> complete_english('doesnt is matched as well')
     "doesn't is matched as well"
     """
-    for x,y in [("dont"   , "don't"),
-                ("doesnt" , "doesn't"),
-                ("wont"   , "won't"),
-                ("wasnt"  , "wasn't")]:
+    for x, y in [("dont", "don't"),
+                ("doesnt", "doesn't"),
+                ("wont", "won't"),
+                ("wasnt", "wasn't")]:
         string = string.replace(x, y)
     return string
 
+
 def underscore2word(string):
     return string.replace('_', ' ')
+
 
 def argumentsof(test):
     if test.arg:
@@ -172,26 +180,34 @@ def argumentsof(test):
             return " for %s" % (test.arg,)
     return ""
 
+
 def underscored2spec(name):
     return complete_english(underscore2word(remove_trailing('_test', remove_leading('test_', name))))
+
 
 def camelcase2spec(name):
     return camel2word(remove_leading_and_trailing('Test', name))
 
+
 def camelcaseDescription(object):
     return inspect.getdoc(object) or camelcase2spec(object.__name__)
+
 
 def underscoredDescription(object):
     return inspect.getdoc(object) or underscored2spec(object.__name__).capitalize()
 
+
 def doctestContextDescription(doctest):
     return doctest._dt_test.name
+
 
 def noseMethodDescription(test):
     return inspect.getdoc(test.method) or underscored2spec(test.method.__name__)
 
+
 def unittestMethodDescription(test):
     return test._testMethodDoc or underscored2spec(test._testMethodName)
+
 
 def noseFunctionDescription(test):
     # Special case for test generators.
@@ -201,12 +217,13 @@ def noseFunctionDescription(test):
         return "holds for %s" % ', '.join(map(str, test.arg))
     return test.test.func_doc or underscored2spec(test.test.func_name)
 
+
 # Different than other similar functions, this one returns a generator
 # of specifications.
 def doctestExamplesDescription(test):
     for ex in test._dt_test.examples:
         source = ex.source.replace("\n", " ")
-        want   = None
+        want = None
         if '#' in source:
             source, want = source.rsplit('#', 1)
         elif ex.exc_msg:
@@ -217,25 +234,28 @@ def doctestExamplesDescription(test):
         if want:
             yield "%s %s" % (source.strip(), want.strip())
 
+
 def testDescription(test):
     supported_test_types = [
-        (nose.case.MethodTestCase   , noseMethodDescription),
-        (nose.case.FunctionTestCase , noseFunctionDescription),
-        (doctest.DocTestCase        , doctestExamplesDescription),
-        (unittest.TestCase          , unittestMethodDescription),
+        (nose.case.MethodTestCase, noseMethodDescription),
+        (nose.case.FunctionTestCase, noseFunctionDescription),
+        (doctest.DocTestCase, doctestExamplesDescription),
+        (unittest.TestCase, unittestMethodDescription),
     ]
     return dispatch_on_type(supported_test_types, test.test)
 
+
 def contextDescription(context):
     supported_context_types = [
-        (types.ModuleType    , underscoredDescription),
-        (types.FunctionType  , underscoredDescription),
-        (doctest.DocTestCase , doctestContextDescription),
+        (types.ModuleType, underscoredDescription),
+        (types.FunctionType, underscoredDescription),
+        (doctest.DocTestCase, doctestContextDescription),
         # Handle both old and new style classes.
-        (types.ClassType     , camelcaseDescription),
-        (type                , camelcaseDescription),
+        (types.ClassType, camelcaseDescription),
+        (type, camelcaseDescription),
     ]
     return dispatch_on_type(supported_context_types, context)
+
 
 def testContext(test):
     # Test generators set their own contexts.
@@ -247,6 +267,7 @@ def testContext(test):
         return test.test
     else:
         return test.context
+
 
 ################################################################################
 ## Output stream that can be easily enabled and disabled.
@@ -272,6 +293,7 @@ class OutputStream(_WritelnDecorator):
     def get_captured(self):
         self.capture_stream.seek(0)
         return self.capture_stream.read()
+
 
 class SpecOutputStream(OutputStream):
     def print_text(self, text):
@@ -304,14 +326,16 @@ class SpecOutputStream(OutputStream):
 ################################################################################
 
 color_end = "\x1b[1;0m"
-colors    = dict(green="\x1b[1;32m", red="\x1b[1;31m", yellow="\x1b[1;33m")
+colors = dict(green="\x1b[1;32m", red="\x1b[1;31m", yellow="\x1b[1;33m")
 
-def in_color(color, text): 
+
+def in_color(color, text):
     """Colorize text, adding color to each line so that the color shows up
     correctly with the less -R as well as more and normal shell.
     """
-    return "".join( "%s%s%s" % (colors[color], line, color_end) 
+    return "".join("%s%s%s" % (colors[color], line, color_end)
                                        for line in text.splitlines(True))
+
 
 ################################################################################
 ## Plugin itself.
@@ -320,7 +344,7 @@ def in_color(color, text):
 class Spec(Plugin):
     """Generate specification from test class/method names.
     """
-    score = 1100 # must be higher than Deprecated and Skip plugins scores
+    score = 1100  # must be higher than Deprecated and Skip plugins scores
 
     def options(self, parser, env=os.environ):
         Plugin.options(self, parser, env)
@@ -374,9 +398,9 @@ class Spec(Plugin):
             return lambda _: self._print_spec(color, test, message)
 
         supported_error_types = [
-            (nose.DeprecatedTest , print_spec_func('yellow', 'DEPRECATED')),
-            (nose.SkipTest       , print_spec_func('yellow', 'SKIPPED')),
-            (True                , print_spec_func('red',    'ERROR')),
+            (nose.DeprecatedTest, print_spec_func('yellow', 'DEPRECATED')),
+            (nose.SkipTest, print_spec_func('yellow', 'SKIPPED')),
+            (True, print_spec_func('red',    'ERROR')),
         ]
 
         dispatch_on_type(supported_error_types, err[1])
